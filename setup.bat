@@ -1,51 +1,29 @@
 @echo off
+echo Setting up Skill Swap Platform...
+
+echo.
 echo ========================================
-echo Setting up Skill Swap Platform
+echo Installing Frontend Dependencies
 echo ========================================
+npm install
 
 echo.
-echo Installing backend dependencies...
-cd backend
-call npm install
-if %errorlevel% neq 0 (
-    echo ERROR: Failed to install backend dependencies
-    echo Please make sure Node.js is installed
-    pause
-    exit /b 1
-)
-
-echo.
-echo Creating environment file...
-if not exist .env (
-    copy env.example .env
-    echo Environment file created
-) else (
-    echo Environment file already exists
-)
-
-echo.
-echo Installing frontend dependencies...
+echo ========================================
+echo Setting up Django Backend
+echo ========================================
+cd django_backend
+setup_django.bat
 cd ..
-call npm install
-if %errorlevel% neq 0 (
-    echo ERROR: Failed to install frontend dependencies
-    pause
-    exit /b 1
-)
 
 echo.
 echo ========================================
 echo Setup Complete!
 echo ========================================
 echo.
-echo To start the backend:
-echo   cd backend
-echo   npm run dev
+echo To start the application:
+echo 1. Frontend: npm start
+echo 2. Backend: start-backend.bat
 echo.
-echo To start the frontend (in a new terminal):
-echo   npm start
-echo.
-echo Backend will run on: http://localhost:5000
-echo Frontend will run on: http://localhost:3000
+echo The frontend will work in demo mode without the backend.
 echo.
 pause 

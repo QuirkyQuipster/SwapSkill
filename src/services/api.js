@@ -1,65 +1,89 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000/api';
 
 // Mock data for when backend is not available
 const mockUsers = [
   {
-    _id: '1',
-    name: 'Alex Johnson',
+    id: 1,
+    username: 'alexjohnson',
+    first_name: 'Alex',
+    last_name: 'Johnson',
+    email: 'alex@example.com',
     location: 'New York',
-    skillsOffered: ['JavaScript', 'React', 'Node.js'],
-    skillsWanted: ['Python', 'Machine Learning'],
-    rating: { average: 4.5, count: 12 },
-    profilePhoto: null
+    skills_offered: ['JavaScript', 'React', 'Node.js'],
+    skills_wanted: ['Python', 'Machine Learning'],
+    rating: 4.5,
+    rating_count: 12,
+    profile_photo: null,
+    bio: 'Full-stack developer passionate about teaching and learning.',
+    is_available: true
   },
   {
-    _id: '2',
-    name: 'Sarah Chen',
+    id: 2,
+    username: 'sarahchen',
+    first_name: 'Sarah',
+    last_name: 'Chen',
+    email: 'sarah@example.com',
     location: 'San Francisco',
-    skillsOffered: ['UI/UX Design', 'Photoshop', 'Figma'],
-    skillsWanted: ['JavaScript', 'React'],
-    rating: { average: 4.8, count: 8 },
-    profilePhoto: null
+    skills_offered: ['UI/UX Design', 'Photoshop', 'Figma'],
+    skills_wanted: ['JavaScript', 'React'],
+    rating: 4.8,
+    rating_count: 8,
+    profile_photo: null,
+    bio: 'Creative designer looking to learn programming.',
+    is_available: true
   },
   {
-    _id: '3',
-    name: 'Mike Rodriguez',
+    id: 3,
+    username: 'mikerodriguez',
+    first_name: 'Mike',
+    last_name: 'Rodriguez',
+    email: 'mike@example.com',
     location: 'Los Angeles',
-    skillsOffered: ['Spanish', 'Cooking', 'Photography'],
-    skillsWanted: ['Excel', 'Data Analysis'],
-    rating: { average: 4.2, count: 15 },
-    profilePhoto: null
+    skills_offered: ['Spanish', 'Cooking', 'Photography'],
+    skills_wanted: ['Excel', 'Data Analysis'],
+    rating: 4.2,
+    rating_count: 15,
+    profile_photo: null,
+    bio: 'Multilingual professional with diverse skills.',
+    is_available: true
   },
   {
-    _id: '4',
-    name: 'Emma Wilson',
+    id: 4,
+    username: 'emmawilson',
+    first_name: 'Emma',
+    last_name: 'Wilson',
+    email: 'emma@example.com',
     location: 'Chicago',
-    skillsOffered: ['Yoga', 'Meditation', 'Nutrition'],
-    skillsWanted: ['Photography', 'Video Editing'],
-    rating: { average: 4.7, count: 6 },
-    profilePhoto: null
+    skills_offered: ['Yoga', 'Meditation', 'Nutrition'],
+    skills_wanted: ['Photography', 'Video Editing'],
+    rating: 4.7,
+    rating_count: 6,
+    profile_photo: null,
+    bio: 'Wellness coach and fitness enthusiast.',
+    is_available: true
   }
 ];
 
 const mockSwapRequests = [
   {
-    _id: '1',
-    requester: { _id: '2', name: 'Sarah Chen' },
-    recipient: { _id: '1', name: 'Alex Johnson' },
-    requestedSkill: 'JavaScript',
-    offeredSkill: 'UI/UX Design',
+    id: 1,
+    requester: { id: 2, first_name: 'Sarah', last_name: 'Chen', email: 'sarah@example.com' },
+    recipient: { id: 1, first_name: 'Alex', last_name: 'Johnson', email: 'alex@example.com' },
+    requested_skill: 'JavaScript',
+    offered_skill: 'UI/UX Design',
     status: 'pending',
     message: 'I\'d like to learn JavaScript from you. I can offer UI/UX Design in return.',
-    createdAt: new Date().toISOString()
+    created_at: new Date().toISOString()
   },
   {
-    _id: '2',
-    requester: { _id: '3', name: 'Mike Rodriguez' },
-    recipient: { _id: '1', name: 'Alex Johnson' },
-    requestedSkill: 'React',
-    offeredSkill: 'Spanish',
+    id: 2,
+    requester: { id: 3, first_name: 'Mike', last_name: 'Rodriguez', email: 'mike@example.com' },
+    recipient: { id: 1, first_name: 'Alex', last_name: 'Johnson', email: 'alex@example.com' },
+    requested_skill: 'React',
+    offered_skill: 'Spanish',
     status: 'accepted',
     message: 'I\'d like to learn React from you. I can offer Spanish lessons in return.',
-    createdAt: new Date(Date.now() - 86400000).toISOString()
+    created_at: new Date(Date.now() - 86400000).toISOString()
   }
 ];
 
@@ -83,7 +107,8 @@ class ApiService {
     const data = await response.json();
     
     if (!response.ok) {
-      throw new Error(data.error || 'Something went wrong');
+      const errorMessage = data.error || data.message || data.detail || 'Something went wrong';
+      throw new Error(errorMessage);
     }
     
     return data;
@@ -111,12 +136,17 @@ class ApiService {
     
     if (action === 'login') {
       const mockUser = {
-        _id: 'current-user',
-        name: data.email.split('@')[0],
+        id: 'current-user',
+        username: data.email.split('@')[0],
+        first_name: data.email.split('@')[0],
+        last_name: '',
         email: data.email,
-        skillsOffered: ['General Help'],
-        skillsWanted: [],
-        rating: { average: 0, count: 0 }
+        skills_offered: ['General Help'],
+        skills_wanted: [],
+        rating: 0,
+        rating_count: 0,
+        bio: '',
+        is_available: true
       };
       localStorage.setItem('token', 'mock-token');
       return { user: mockUser, token: 'mock-token' };
@@ -124,12 +154,17 @@ class ApiService {
     
     if (action === 'register') {
       const mockUser = {
-        _id: 'current-user',
-        name: data.name,
+        id: 'current-user',
+        username: data.username || data.email.split('@')[0],
+        first_name: data.first_name || data.name,
+        last_name: data.last_name || '',
         email: data.email,
-        skillsOffered: ['General Help'],
-        skillsWanted: [],
-        rating: { average: 0, count: 0 }
+        skills_offered: ['General Help'],
+        skills_wanted: [],
+        rating: 0,
+        rating_count: 0,
+        bio: '',
+        is_available: true
       };
       localStorage.setItem('token', 'mock-token');
       return { user: mockUser, token: 'mock-token' };
@@ -141,12 +176,17 @@ class ApiService {
       
       return {
         user: {
-          _id: 'current-user',
-          name: 'Demo User',
+          id: 'current-user',
+          username: 'demo_user',
+          first_name: 'Demo',
+          last_name: 'User',
           email: 'demo@example.com',
-          skillsOffered: ['General Help'],
-          skillsWanted: [],
-          rating: { average: 0, count: 0 }
+          skills_offered: ['General Help'],
+          skills_wanted: [],
+          rating: 0,
+          rating_count: 0,
+          bio: '',
+          is_available: true
         }
       };
     }
@@ -155,7 +195,7 @@ class ApiService {
   // Authentication
   async register(userData) {
     try {
-      const response = await this.makeRequest(`${this.baseURL}/auth/register`, {
+      const response = await this.makeRequest(`${this.baseURL}/auth/register/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
@@ -169,7 +209,7 @@ class ApiService {
 
   async login(credentials) {
     try {
-      const response = await this.makeRequest(`${this.baseURL}/auth/login`, {
+      const response = await this.makeRequest(`${this.baseURL}/auth/login/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials)
@@ -183,7 +223,7 @@ class ApiService {
 
   async logout() {
     try {
-      await this.makeRequest(`${this.baseURL}/auth/logout`, {
+      await this.makeRequest(`${this.baseURL}/auth/logout/`, {
         method: 'POST',
         headers: this.getAuthHeaders()
       });
@@ -196,7 +236,7 @@ class ApiService {
 
   async getCurrentUser() {
     try {
-      return await this.makeRequest(`${this.baseURL}/auth/me`, {
+      return await this.makeRequest(`${this.baseURL}/auth/me/`, {
         headers: this.getAuthHeaders()
       });
     } catch (error) {
@@ -207,7 +247,7 @@ class ApiService {
   // User Management
   async updateProfile(profileData) {
     try {
-      return await this.makeRequest(`${this.baseURL}/users/profile`, {
+      return await this.makeRequest(`${this.baseURL}/users/profile/`, {
         method: 'PUT',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(profileData)
@@ -215,14 +255,14 @@ class ApiService {
     } catch (error) {
       // Mock profile update
       await new Promise(resolve => setTimeout(resolve, 500));
-      return { user: { ...profileData, _id: 'current-user' } };
+      return { user: { ...profileData, id: 'current-user' } };
     }
   }
 
   async searchUsers(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
-      return await this.makeRequest(`${this.baseURL}/users/search?${queryString}`, {
+      return await this.makeRequest(`${this.baseURL}/users/list/?${queryString}`, {
         headers: this.getAuthHeaders()
       });
     } catch (error) {
@@ -230,18 +270,25 @@ class ApiService {
       await new Promise(resolve => setTimeout(resolve, 300));
       let filteredUsers = [...mockUsers];
       
+      if (params.search) {
+        filteredUsers = filteredUsers.filter(user => 
+          `${user.first_name} ${user.last_name}`.toLowerCase().includes(params.search.toLowerCase()) ||
+          user.email.toLowerCase().includes(params.search.toLowerCase())
+        );
+      }
+      
       if (params.skill) {
         filteredUsers = filteredUsers.filter(user => 
-          user.skillsOffered.some(skill => 
+          user.skills_offered.some(skill => 
             skill.toLowerCase().includes(params.skill.toLowerCase())
           ) ||
-          user.skillsWanted.some(skill => 
+          user.skills_wanted.some(skill => 
             skill.toLowerCase().includes(params.skill.toLowerCase())
           )
         );
       }
       
-      return { users: filteredUsers };
+      return { results: filteredUsers };
     }
   }
 
@@ -249,7 +296,7 @@ class ApiService {
   async getAvailableSkills(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
-      return await this.makeRequest(`${this.baseURL}/skills/available?${queryString}`, {
+      return await this.makeRequest(`${this.baseURL}/skills/available/?${queryString}`, {
         headers: this.getAuthHeaders()
       });
     } catch (error) {
@@ -259,10 +306,10 @@ class ApiService {
       
       if (params.skill) {
         filteredUsers = filteredUsers.filter(user => 
-          user.skillsOffered.some(skill => 
+          user.skills_offered.some(skill => 
             skill.toLowerCase().includes(params.skill.toLowerCase())
           ) ||
-          user.skillsWanted.some(skill => 
+          user.skills_wanted.some(skill => 
             skill.toLowerCase().includes(params.skill.toLowerCase())
           )
         );
@@ -274,14 +321,14 @@ class ApiService {
 
   async getPopularSkills() {
     try {
-      return await this.makeRequest(`${this.baseURL}/skills/popular`, {
+      return await this.makeRequest(`${this.baseURL}/skills/popular/`, {
         headers: this.getAuthHeaders()
       });
     } catch (error) {
       // Mock popular skills
       await new Promise(resolve => setTimeout(resolve, 200));
       return { 
-        popularSkills: [
+        popular_skills: [
           { skill: 'JavaScript', count: 15 },
           { skill: 'React', count: 12 },
           { skill: 'Python', count: 10 },
@@ -294,7 +341,7 @@ class ApiService {
 
   async getSkillCategories() {
     try {
-      return await this.makeRequest(`${this.baseURL}/skills/categories`, {
+      return await this.makeRequest(`${this.baseURL}/skills/categories/`, {
         headers: this.getAuthHeaders()
       });
     } catch (error) {
@@ -312,7 +359,7 @@ class ApiService {
   // Swap Requests
   async createSwapRequest(requestData) {
     try {
-      return await this.makeRequest(`${this.baseURL}/swaps`, {
+      return await this.makeRequest(`${this.baseURL}/swaps/`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(requestData)
@@ -321,35 +368,35 @@ class ApiService {
       // Mock swap request creation
       await new Promise(resolve => setTimeout(resolve, 500));
       const newRequest = {
-        _id: Date.now().toString(),
-        requester: { _id: 'current-user', name: 'You' },
-        recipient: { _id: requestData.recipientId, name: 'Demo User' },
-        requestedSkill: requestData.requestedSkill,
-        offeredSkill: requestData.offeredSkill,
+        id: Date.now().toString(),
+        requester: { id: 'current-user', first_name: 'You', last_name: '', email: 'demo@example.com' },
+        recipient: { id: requestData.recipient, first_name: 'Demo', last_name: 'User', email: 'demo@example.com' },
+        requested_skill: requestData.requested_skill,
+        offered_skill: requestData.offered_skill,
         status: 'pending',
         message: requestData.message,
-        createdAt: new Date().toISOString()
+        created_at: new Date().toISOString()
       };
-      return { swapRequest: newRequest };
+      return newRequest;
     }
   }
 
   async getSwapRequests(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
-      return await this.makeRequest(`${this.baseURL}/swaps?${queryString}`, {
+      return await this.makeRequest(`${this.baseURL}/swaps/?${queryString}`, {
         headers: this.getAuthHeaders()
       });
     } catch (error) {
       // Mock swap requests
       await new Promise(resolve => setTimeout(resolve, 300));
-      return { swapRequests: mockSwapRequests };
+      return { results: mockSwapRequests };
     }
   }
 
   async updateSwapRequest(requestId, updateData) {
     try {
-      return await this.makeRequest(`${this.baseURL}/swaps/${requestId}`, {
+      return await this.makeRequest(`${this.baseURL}/swaps/${requestId}/`, {
         method: 'PATCH',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(updateData)
@@ -363,7 +410,7 @@ class ApiService {
 
   async deleteSwapRequest(requestId) {
     try {
-      return await this.makeRequest(`${this.baseURL}/swaps/${requestId}`, {
+      return await this.makeRequest(`${this.baseURL}/swaps/${requestId}/`, {
         method: 'DELETE',
         headers: this.getAuthHeaders()
       });
@@ -377,7 +424,7 @@ class ApiService {
   // Health check
   async healthCheck() {
     try {
-      return await this.makeRequest(`${this.baseURL}/health`);
+      return await this.makeRequest(`${this.baseURL}/health/health/`);
     } catch (error) {
       return { status: 'DEMO', message: 'Running in demo mode - backend not available' };
     }

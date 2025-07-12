@@ -25,7 +25,7 @@ function BrowseSkills() {
       if (selectedSkill) params.skill = selectedSkill;
       
       const data = await api.getAvailableSkills(params);
-      setUsers(data.users);
+      setUsers(data.users || []);
       setError(null);
     } catch (err) {
       setError('Failed to load users');
@@ -45,15 +45,11 @@ function BrowseSkills() {
     try {
       setRequesting(recipientId);
       
-      // Find a skill that the current user offers and the recipient wants
-      const recipient = users.find(u => u._id === recipientId);
-      const userOfferedSkill = user.skillsOffered[0] || 'General Help';
-      
       await api.createSwapRequest({
-        recipientId,
-        requestedSkill,
-        offeredSkill: userOfferedSkill,
-        message: `I'd like to learn ${requestedSkill} from you. I can offer ${userOfferedSkill} in return.`
+        recipient: recipientId,
+        requested_skill: requestedSkill,
+        offered_skill: offeredSkill,
+        message: `I'd like to learn ${requestedSkill} from you. I can offer ${offeredSkill} in return.`
       });
       
       alert('Swap request sent successfully!');
@@ -71,162 +67,177 @@ function BrowseSkills() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-8 transition-colors duration-300">
-        <div className="max-w-2xl mx-auto text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4">Loading users...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-white text-lg">Loading users...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-8 transition-colors duration-300">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-bold mb-6 text-blue-700 dark:text-yellow-300">Browse Skills</h2>
-        
-        {/* Login Prompt for Non-Authenticated Users */}
-        {!isAuthenticated && (
-          <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-blue-800 dark:text-blue-200">Want to connect with others?</h3>
-                <p className="text-blue-600 dark:text-blue-300 text-sm mt-1">
-                  Login to send swap requests and manage your profile
-                </p>
-              </div>
-              <button
-                onClick={() => navigate('/login')}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-              >
-                Login
-              </button>
+    <div className="max-w-6xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <h1 className="text-4xl font-bold text-white mb-4">Browse Skills</h1>
+        <p className="text-white/80 text-lg">Find people with the skills you want to learn</p>
+      </div>
+      
+      {/* Login Prompt for Non-Authenticated Users */}
+      {!isAuthenticated && (
+        <div className="glass rounded-2xl p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-white text-lg">Want to connect with others?</h3>
+              <p className="text-white/80 text-sm mt-1">
+                Login to send swap requests and manage your profile
+              </p>
             </div>
-          </div>
-        )}
-        
-        {/* Search Bar */}
-        <div className="mb-6">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 border rounded mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600 placeholder-gray-500 dark:placeholder-gray-400"
-            placeholder="Search by skill (e.g., JavaScript, Photoshop, Cooking)..."
-          />
-          
-          {/* Popular Skills */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            {popularSkills.map((skill) => (
-              <button
-                key={skill}
-                onClick={() => setSelectedSkill(selectedSkill === skill ? '' : skill)}
-                className={`px-3 py-1 rounded-full text-sm transition ${
-                  selectedSkill === skill
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                }`}
-              >
-                {skill}
-              </button>
-            ))}
+            <button
+              onClick={() => navigate('/login')}
+              className="btn-primary"
+            >
+              Login
+            </button>
           </div>
         </div>
+      )}
+      
+      {/* Search Bar */}
+      <div className="glass rounded-2xl p-6 mb-8">
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="input-modern w-full mb-4"
+          placeholder="Search by skill (e.g., JavaScript, Photoshop, Cooking)..."
+        />
+        
+        {/* Popular Skills */}
+        <div className="flex flex-wrap gap-2">
+          {popularSkills.map((skill) => (
+            <button
+              key={skill}
+              onClick={() => setSelectedSkill(selectedSkill === skill ? '' : skill)}
+              className={`px-4 py-2 rounded-full text-sm transition-all duration-300 ${
+                selectedSkill === skill
+                  ? 'bg-gradient-to-r from-blue-400 to-purple-500 text-white shadow-lg'
+                  : 'bg-white/10 text-white/80 hover:bg-white/20 border border-white/20'
+              }`}
+            >
+              {skill}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-4 rounded mb-6">
-            {error}
-          </div>
-        )}
+      {/* Error Message */}
+      {error && (
+        <div className="glass rounded-2xl p-6 mb-8 border border-red-400/30">
+          <p className="text-red-300">{error}</p>
+        </div>
+      )}
 
-        {/* Users Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {users.length === 0 ? (
-            <div className="col-span-full text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">
+      {/* Users Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {users.length === 0 ? (
+          <div className="col-span-full text-center py-12">
+            <div className="glass rounded-2xl p-8">
+              <p className="text-white/60 text-lg">
                 {searchTerm || selectedSkill 
                   ? 'No users found with those skills. Try a different search term.'
                   : 'No users available at the moment.'
                 }
               </p>
             </div>
-          ) : (
-            users.map((userData) => (
-              <div key={userData._id} className="bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 p-6 rounded-lg shadow-lg transition-colors duration-300">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xl font-bold text-gray-700 dark:text-gray-200 overflow-hidden">
-                    {userData.profilePhoto ? (
-                      <img src={userData.profilePhoto} alt="Profile" className="w-full h-full object-cover" />
-                    ) : (
-                      userData.name[0]
-                    )}
+          </div>
+        ) : (
+          users.map((userData) => (
+            <div key={userData.id} className="glass card-hover rounded-2xl p-6">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-xl font-bold text-white overflow-hidden">
+                  {userData.profile_photo ? (
+                    <img src={userData.profile_photo} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    `${userData.first_name?.[0] || userData.username?.[0] || 'U'}`
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="font-semibold text-lg text-white">
+                    {userData.first_name && userData.last_name 
+                      ? `${userData.first_name} ${userData.last_name}`
+                      : userData.username
+                    }
                   </div>
-                  <div className="flex-1">
-                    <div className="font-semibold text-lg">{userData.name}</div>
-                    {userData.location && (
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
-                        📍 {userData.location}
-                      </div>
-                    )}
-                    {userData.rating && userData.rating.average > 0 && (
-                      <div className="text-sm text-yellow-600 dark:text-yellow-400">
-                        ⭐ {userData.rating.average.toFixed(1)} ({userData.rating.count} reviews)
-                      </div>
+                  {userData.location && (
+                    <div className="text-sm text-white/60">
+                      📍 {userData.location}
+                    </div>
+                  )}
+                  {userData.rating && userData.rating > 0 && (
+                    <div className="text-sm text-yellow-300">
+                      ⭐ {userData.rating.toFixed(1)} ({userData.rating_count} reviews)
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Skills Offered */}
+              {userData.skills_offered && userData.skills_offered.length > 0 && (
+                <div className="mb-4">
+                  <div className="text-sm font-medium text-white/80 mb-2">Offers:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {userData.skills_offered.slice(0, 3).map((skill, index) => (
+                      <span key={index} className="skill-tag bg-green-500/20 text-green-300 border border-green-400/30">
+                        {skill}
+                      </span>
+                    ))}
+                    {userData.skills_offered.length > 3 && (
+                      <span className="text-xs text-white/50">+{userData.skills_offered.length - 3} more</span>
                     )}
                   </div>
                 </div>
+              )}
 
-                {/* Skills Offered */}
-                {userData.skillsOffered && userData.skillsOffered.length > 0 && (
-                  <div className="mb-3">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Offers:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {userData.skillsOffered.slice(0, 3).map((skill, index) => (
-                        <span key={index} className="bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 px-2 py-1 rounded text-xs">
-                          {skill}
-                        </span>
-                      ))}
-                      {userData.skillsOffered.length > 3 && (
-                        <span className="text-xs text-gray-500">+{userData.skillsOffered.length - 3} more</span>
-                      )}
-                    </div>
+              {/* Skills Wanted */}
+              {userData.skills_wanted && userData.skills_wanted.length > 0 && (
+                <div className="mb-6">
+                  <div className="text-sm font-medium text-white/80 mb-2">Wants to learn:</div>
+                  <div className="flex flex-wrap gap-2">
+                    {userData.skills_wanted.slice(0, 3).map((skill, index) => (
+                      <span key={index} className="skill-tag bg-purple-500/20 text-purple-300 border border-purple-400/30">
+                        {skill}
+                      </span>
+                    ))}
+                    {userData.skills_wanted.length > 3 && (
+                      <span className="text-xs text-white/50">+{userData.skills_wanted.length - 3} more</span>
+                    )}
                   </div>
-                )}
+                </div>
+              )}
 
-                {/* Skills Wanted */}
-                {userData.skillsWanted && userData.skillsWanted.length > 0 && (
-                  <div className="mb-4">
-                    <div className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">Wants to learn:</div>
-                    <div className="flex flex-wrap gap-1">
-                      {userData.skillsWanted.slice(0, 3).map((skill, index) => (
-                        <span key={index} className="bg-purple-100 text-purple-700 dark:bg-purple-800 dark:text-purple-200 px-2 py-1 rounded text-xs">
-                          {skill}
-                        </span>
-                      ))}
-                      {userData.skillsWanted.length > 3 && (
-                        <span className="text-xs text-gray-500">+{userData.skillsWanted.length - 3} more</span>
-                      )}
-                    </div>
-                  </div>
-                )}
+              {/* Bio */}
+              {userData.bio && (
+                <div className="mb-6">
+                  <p className="text-white/70 text-sm italic">"{userData.bio}"</p>
+                </div>
+              )}
 
-                {/* Request Button */}
-                <button
-                  onClick={() => {
-                    const skillToRequest = userData.skillsOffered[0] || 'their skills';
-                    const userOfferedSkill = isAuthenticated ? (user.skillsOffered[0] || 'General Help') : 'General Help';
-                    handleSwapRequest(userData._id, skillToRequest, userOfferedSkill);
-                  }}
-                  disabled={requesting === userData._id}
-                  className="w-full bg-blue-600 dark:bg-yellow-400 text-white dark:text-black px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {requesting === userData._id ? 'Sending...' : 'Request Swap'}
-                </button>
-              </div>
-            ))
-          )}
-        </div>
+              {/* Request Button */}
+              <button
+                onClick={() => {
+                  const skillToRequest = userData.skills_offered?.[0] || 'their skills';
+                  const userOfferedSkill = isAuthenticated ? (user.skills_offered?.[0] || 'General Help') : 'General Help';
+                  handleSwapRequest(userData.id, skillToRequest, userOfferedSkill);
+                }}
+                disabled={requesting === userData.id}
+                className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {requesting === userData.id ? 'Sending...' : 'Request Swap'}
+              </button>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

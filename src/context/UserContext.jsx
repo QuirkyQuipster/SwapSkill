@@ -15,7 +15,7 @@ export function UserProvider({ children }) {
       api.getCurrentUser()
         .then(data => {
           setUser(data.user);
-          localStorage.setItem('userRole', data.user.role);
+          localStorage.setItem('userRole', data.user.role || 'user');
         })
         .catch(err => {
           console.error('Failed to get current user:', err);
@@ -35,7 +35,7 @@ export function UserProvider({ children }) {
       setError(null);
       const data = await api.login(credentials);
       setUser(data.user);
-      localStorage.setItem('userRole', data.user.role);
+      localStorage.setItem('userRole', data.user.role || 'user');
       return data;
     } catch (err) {
       setError(err.message);
@@ -48,7 +48,7 @@ export function UserProvider({ children }) {
       setError(null);
       const data = await api.register(userData);
       setUser(data.user);
-      localStorage.setItem('userRole', data.user.role);
+      localStorage.setItem('userRole', data.user.role || 'user');
       return data;
     } catch (err) {
       setError(err.message);

@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
-function Signup() {
-  const navigate = useNavigate();
-  const { register, error } = useUser();
+function SignUp() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    location: ''
+    confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
-  const [localError, setLocalError] = useState('');
+  const [error, setError] = useState('');
+  const { register } = useUser();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({
@@ -25,18 +24,10 @@ function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setLocalError('');
+    setError('');
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setLocalError('Passwords do not match');
-      setLoading(false);
-      return;
-    }
-
-    // Validate password length
-    if (formData.password.length < 6) {
-      setLocalError('Password must be at least 6 characters long');
+      setError('Passwords do not match');
       setLoading(false);
       return;
     }
@@ -45,95 +36,147 @@ function Signup() {
       await register({
         name: formData.name,
         email: formData.email,
-        password: formData.password,
-        location: formData.location
+        password: formData.password
       });
       navigate('/');
-    } catch (err) {
-      setLocalError(err.message);
+    } catch (error) {
+      setError(error.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 flex items-center justify-center p-6">
-      <div className="bg-gray-100 dark:bg-gray-800 p-8 rounded-lg shadow-md w-full max-w-md transition-colors duration-300">
-        <h2 className="text-3xl font-bold mb-6 text-center text-blue-600 dark:text-yellow-300">Create Account</h2>
-        
-        {/* Error Message */}
-        {(error || localError) && (
-          <div className="bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 p-4 rounded mb-4">
-            {error || localError}
+    <div className="min-h-screen flex items-center justify-center px-4">
+      <div className="glass backdrop-blur-lg rounded-3xl p-8 w-full max-w-md fade-in">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-white mb-2">Join Our Community</h1>
+          <p className="text-white/80">Create your account and start swapping skills</p>
+        </div>
+
+        {error && (
+          <div className="bg-red-500/20 border border-red-400/30 rounded-lg p-4 mb-6">
+            <p className="text-red-300 text-sm">{error}</p>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            placeholder="Full Name"
-            required
-            className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-400"
-          />
-          <input
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            placeholder="Email Address"
-            required
-            className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-400"
-          />
-          <input
-            type="password"
-            name="password"
-            value={formData.password}
-            onChange={handleChange}
-            placeholder="Create Password (min 6 characters)"
-            required
-            minLength="6"
-            className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-400"
-          />
-          <input
-            type="password"
-            name="confirmPassword"
-            value={formData.confirmPassword}
-            onChange={handleChange}
-            placeholder="Confirm Password"
-            required
-            className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-400"
-          />
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            placeholder="Location (Optional)"
-            className="px-4 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-yellow-400"
-          />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="name" className="block text-white font-medium mb-2">
+              Full Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="input-modern w-full"
+              placeholder="Enter your full name"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-white font-medium mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="input-modern w-full"
+              placeholder="Enter your email"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-white font-medium mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              minLength="6"
+              className="input-modern w-full"
+              placeholder="Enter your password"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="confirmPassword" className="block text-white font-medium mb-2">
+              Confirm Password
+            </label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              required
+              minLength="6"
+              className="input-modern w-full"
+              placeholder="Confirm your password"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={loading}
-            className="py-2 px-4 rounded font-semibold shadow bg-blue-600 hover:bg-blue-700 dark:bg-yellow-400 dark:hover:bg-yellow-500 text-white dark:text-black transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="btn-primary w-full py-4 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Creating Account...' : 'Sign Up'}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <div className="spinner w-6 h-6 mr-3"></div>
+                Creating Account...
+              </div>
+            ) : (
+              'Create Account'
+            )}
           </button>
         </form>
-        <div className="mt-4 text-sm text-center">
-          Already have an account?{" "}
-          <button
-            onClick={() => navigate('/login')}
-            className="text-blue-600 dark:text-yellow-400 hover:underline font-medium"
-          >
-            Sign In
-          </button>
+
+        <div className="mt-8 text-center">
+          <p className="text-white/80 mb-4">
+            Already have an account?{' '}
+            <Link to="/login" className="text-yellow-300 hover:text-yellow-200 font-semibold transition-colors">
+              Sign in here
+            </Link>
+          </p>
+        </div>
+
+        {/* Benefits */}
+        <div className="mt-8 p-6 bg-gradient-to-r from-green-500/10 to-blue-500/10 border border-green-400/30 rounded-lg">
+          <h3 className="text-white font-semibold mb-3">Why Join Skill Swap?</h3>
+          <ul className="text-white/80 text-sm space-y-2">
+            <li className="flex items-center">
+              <span className="text-green-400 mr-2">✓</span>
+              Connect with skill experts
+            </li>
+            <li className="flex items-center">
+              <span className="text-green-400 mr-2">✓</span>
+              Learn new skills for free
+            </li>
+            <li className="flex items-center">
+              <span className="text-green-400 mr-2">✓</span>
+              Share your expertise
+            </li>
+            <li className="flex items-center">
+              <span className="text-green-400 mr-2">✓</span>
+              Build your reputation
+            </li>
+          </ul>
         </div>
       </div>
     </div>
   );
 }
 
-export default Signup;
+export default SignUp;

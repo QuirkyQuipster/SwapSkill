@@ -28,8 +28,8 @@ function AppContent() {
   }, []);
 
   const linkClass = ({ isActive }) =>
-    `hover:text-blue-600 dark:hover:text-yellow-300 transition ${
-      isActive ? "font-bold text-blue-600 dark:text-yellow-300" : ""
+    `hover:text-white dark:hover:text-yellow-300 transition-all duration-300 px-4 py-2 rounded-lg ${
+      isActive ? "bg-white/20 text-white dark:text-yellow-300 font-semibold" : "text-white/80 dark:text-gray-300"
     }`;
 
   const toggleTheme = () => {
@@ -42,23 +42,23 @@ function AppContent() {
   // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          <div className="spinner mx-auto mb-4"></div>
+          <p className="text-white text-lg font-medium">Loading...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 transition-all duration-300">
       {/* Demo Mode Banner */}
       {demoMode && (
-        <div className="bg-yellow-100 dark:bg-yellow-900 border-b border-yellow-200 dark:border-yellow-700">
-          <div className="max-w-7xl mx-auto px-4 py-2">
-            <div className="flex items-center justify-center text-yellow-800 dark:text-yellow-200 text-sm">
-              <span className="mr-2">🎭</span>
+        <div className="glass-dark border-b border-yellow-400/30">
+          <div className="max-w-7xl mx-auto px-4 py-3">
+            <div className="flex items-center justify-center text-yellow-300 text-sm">
+              <span className="mr-2 text-lg">🎭</span>
               <span className="font-medium">Demo Mode:</span>
               <span className="ml-1">Running with mock data. Install Node.js and start the backend for full functionality.</span>
             </div>
@@ -67,9 +67,11 @@ function AppContent() {
       )}
 
       {/* NAVBAR */}
-      <nav className="bg-white dark:bg-gray-900 shadow flex items-center justify-between px-8 py-4 mb-8">
+      <nav className="glass backdrop-blur-lg shadow-2xl flex items-center justify-between px-8 py-6 mb-8">
         <div className="flex gap-6 items-center">
-          <span className="text-2xl font-bold text-blue-600 dark:text-yellow-300">Skill Swap</span>
+          <span className="text-3xl font-bold bg-gradient-to-r from-white to-yellow-300 bg-clip-text text-transparent">
+            Skill Swap
+          </span>
           <NavLink to="/" className={linkClass}>Home</NavLink>
           
           {/* Always show Browse Skills */}
@@ -95,7 +97,7 @@ function AppContent() {
         {/* Theme Toggle Button */}
         <div className="relative group">
           <button
-            className="bg-blue-600 dark:bg-gray-700 text-white dark:text-yellow-300 px-4 py-2 rounded-full shadow hover:bg-blue-700 dark:hover:bg-gray-600 transition font-semibold flex items-center gap-2"
+            className="btn-primary flex items-center gap-2"
             onClick={toggleTheme}
             aria-label="Toggle Theme"
           >
@@ -104,8 +106,9 @@ function AppContent() {
             ) : (
               <MoonIcon />
             )}
+            <span className="hidden sm:inline">Theme</span>
           </button>
-          <span className="absolute right-0 top-full mt-2 px-3 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
+          <span className="absolute right-0 top-full mt-2 px-3 py-1 glass text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
             Toggle Theme
           </span>
         </div>
@@ -114,7 +117,7 @@ function AppContent() {
         {isAuthenticated && (
           <button 
             onClick={logout}
-            className="ml-4 hover:text-red-600 dark:hover:text-red-400 transition px-3 py-1 rounded border border-red-300 hover:border-red-500"
+            className="ml-4 hover:text-red-300 transition-all duration-300 px-4 py-2 rounded-lg border border-red-400/30 hover:border-red-400 hover:bg-red-400/10"
           >
             Logout
           </button>
@@ -122,7 +125,7 @@ function AppContent() {
       </nav>
 
       {/* ROUTES */}
-      <div className="flex flex-col items-center justify-center min-h-[70vh]">
+      <div className="flex flex-col items-center justify-center min-h-[70vh] px-4">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/browse" element={<BrowseSkills />} />
