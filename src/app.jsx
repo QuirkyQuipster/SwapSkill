@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
+import { UserProvider, useUser } from './context/UserContext';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
 import BrowseSkills from './pages/BrowseSkills';
@@ -8,10 +9,8 @@ import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import Signup from './pages/SignUp';
 
-
-function App() {
-  // Simulate role (replace with context/localStorage later)
-  const userRole = localStorage.getItem("userRole") || "user"; // or "admin"
+function AppContent() {
+  const { user, logout, isAuthenticated } = useUser();
 
   const linkClass = ({ isActive }) =>
     `hover:text-blue-600 dark:hover:text-yellow-300 transition ${
@@ -26,59 +25,79 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-        {/* NAVBAR */}
-        <nav className="bg-white dark:bg-gray-900 shadow flex items-center justify-between px-8 py-4 mb-8">
-          <div className="flex gap-6 items-center">
-            <span className="text-2xl font-bold text-blue-600 dark:text-yellow-300">Skill Swap</span>
-            <NavLink to="/" className={linkClass}>Home</NavLink>
-            <NavLink to="/profile" className={linkClass}>Profile</NavLink>
-            <NavLink to="/browse" className={linkClass}>Browse Skills</NavLink>
-            <NavLink to="/swaps" className={linkClass}>Swap Requests</NavLink>
-            {userRole === "admin" && (
-              <NavLink to="/admin" className={linkClass}>Admin</NavLink>
-            )}
-            <NavLink to="/login" className={linkClass}>Login</NavLink>
-          </div>
-
-          {/* Theme Toggle Button */}
-          <div className="relative group">
-            <button
-              className="bg-blue-600 dark:bg-gray-700 text-white dark:text-yellow-300 px-4 py-2 rounded-full shadow hover:bg-blue-700 dark:hover:bg-gray-600 transition font-semibold flex items-center gap-2"
-              onClick={toggleTheme}
-              aria-label="Toggle Theme"
-            >
-              {document.body.classList.contains('dark') ? (
-                <SunIcon />
-              ) : (
-                <MoonIcon />
+    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+      {/* NAVBAR */}
+      <nav className="bg-white dark:bg-gray-900 shadow flex items-center justify-between px-8 py-4 mb-8">
+        <div className="flex gap-6 items-center">
+          <span className="text-2xl font-bold text-blue-600 dark:text-yellow-300">Skill Swap</span>
+          <NavLink to="/" className={linkClass}>Home</NavLink>
+          {isAuthenticated && (
+            <>
+              <NavLink to="/profile" className={linkClass}>Profile</NavLink>
+              <NavLink to="/browse" className={linkClass}>Browse Skills</NavLink>
+              <NavLink to="/swaps" className={linkClass}>Swap Requests</NavLink>
+              {user?.role === "admin" && (
+                <NavLink to="/admin" className={linkClass}>Admin</NavLink>
               )}
+            </>
+          )}
+          {!isAuthenticated ? (
+            <>
+              <NavLink to="/login" className={linkClass}>Login</NavLink>
+              <NavLink to="/signup" className={linkClass}>Sign Up</NavLink>
+            </>
+          ) : (
+            <button 
+              onClick={logout}
+              className="hover:text-red-600 dark:hover:text-red-400 transition"
+            >
+              Logout
             </button>
-            <span className="absolute right-0 top-full mt-2 px-3 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
-              Toggle Theme
-            </span>
-          </div>
-        </nav>
-
-        {/* ROUTES */}
-        <div className="flex flex-col items-center justify-center min-h-[70vh]">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/browse" element={<BrowseSkills />} />
-            <Route path="/swaps" element={<SwapRequests />} />
-            {userRole === "admin" ? (
-              <Route path="/admin" element={<AdminDashboard />} />
-            ) : (
-              <Route path="/admin" element={<Navigate to="/" />} />
-            )}
-            <Route path="/login" element={<Login />} />
-            <Route path="/signup" element={<Signup />} />
-          </Routes>
+          )}
         </div>
+
+        {/* Theme Toggle Button */}
+        <div className="relative group">
+          <button
+            className="bg-blue-600 dark:bg-gray-700 text-white dark:text-yellow-300 px-4 py-2 rounded-full shadow hover:bg-blue-700 dark:hover:bg-gray-600 transition font-semibold flex items-center gap-2"
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+          >
+            {document.body.classList.contains('dark') ? (
+              <SunIcon />
+            ) : (
+              <MoonIcon />
+            )}
+          </button>
+          <span className="absolute right-0 top-full mt-2 px-3 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-10">
+            Toggle Theme
+          </span>
+        </div>
+      </nav>
+
+      {/* ROUTES */}
+      <div className="flex flex-col items-center justify-center min-h-[70vh]">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+          <Route path="/browse" element={isAuthenticated ? <BrowseSkills /> : <Navigate to="/login" />} />
+          <Route path="/swaps" element={isAuthenticated ? <SwapRequests /> : <Navigate to="/login" />} />
+          <Route path="/admin" element={user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/" />} />
+          <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />
+          <Route path="/signup" element={!isAuthenticated ? <Signup /> : <Navigate to="/" />} />
+        </Routes>
       </div>
-    </Router>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <UserProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </UserProvider>
   );
 }
 
