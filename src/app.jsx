@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { UserProvider, useUser } from './context/UserContext';
 import Home from './pages/Home';
@@ -8,9 +8,24 @@ import SwapRequests from './pages/SwapRequests';
 import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import Signup from './pages/SignUp';
+import api from './services/api';
 
 function AppContent() {
-  const { user, logout, isAuthenticated } = useUser();
+  const { user, logout, isAuthenticated, loading } = useUser();
+  const [demoMode, setDemoMode] = useState(false);
+
+  // Check if we're in demo mode
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        await api.healthCheck();
+        setDemoMode(false);
+      } catch (error) {
+        setDemoMode(true);
+      }
+    };
+    checkBackend();
+  }, []);
 
   const linkClass = ({ isActive }) =>
     `hover:text-blue-600 dark:hover:text-yellow-300 transition ${
@@ -24,35 +39,56 @@ function AppContent() {
     }, 100);
   };
 
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 to-purple-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+      {/* Demo Mode Banner */}
+      {demoMode && (
+        <div className="bg-yellow-100 dark:bg-yellow-900 border-b border-yellow-200 dark:border-yellow-700">
+          <div className="max-w-7xl mx-auto px-4 py-2">
+            <div className="flex items-center justify-center text-yellow-800 dark:text-yellow-200 text-sm">
+              <span className="mr-2">🎭</span>
+              <span className="font-medium">Demo Mode:</span>
+              <span className="ml-1">Running with mock data. Install Node.js and start the backend for full functionality.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* NAVBAR */}
       <nav className="bg-white dark:bg-gray-900 shadow flex items-center justify-between px-8 py-4 mb-8">
         <div className="flex gap-6 items-center">
           <span className="text-2xl font-bold text-blue-600 dark:text-yellow-300">Skill Swap</span>
           <NavLink to="/" className={linkClass}>Home</NavLink>
-          {isAuthenticated && (
+          
+          {/* Always show Browse Skills */}
+          <NavLink to="/browse" className={linkClass}>Browse Skills</NavLink>
+          
+          {/* Show other nav items based on authentication */}
+          {isAuthenticated ? (
             <>
               <NavLink to="/profile" className={linkClass}>Profile</NavLink>
-              <NavLink to="/browse" className={linkClass}>Browse Skills</NavLink>
               <NavLink to="/swaps" className={linkClass}>Swap Requests</NavLink>
               {user?.role === "admin" && (
                 <NavLink to="/admin" className={linkClass}>Admin</NavLink>
               )}
             </>
-          )}
-          {!isAuthenticated ? (
+          ) : (
             <>
               <NavLink to="/login" className={linkClass}>Login</NavLink>
               <NavLink to="/signup" className={linkClass}>Sign Up</NavLink>
             </>
-          ) : (
-            <button 
-              onClick={logout}
-              className="hover:text-red-600 dark:hover:text-red-400 transition"
-            >
-              Logout
-            </button>
           )}
         </div>
 
@@ -73,14 +109,24 @@ function AppContent() {
             Toggle Theme
           </span>
         </div>
+
+        {/* Logout button for authenticated users */}
+        {isAuthenticated && (
+          <button 
+            onClick={logout}
+            className="ml-4 hover:text-red-600 dark:hover:text-red-400 transition px-3 py-1 rounded border border-red-300 hover:border-red-500"
+          >
+            Logout
+          </button>
+        )}
       </nav>
 
       {/* ROUTES */}
       <div className="flex flex-col items-center justify-center min-h-[70vh]">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/browse" element={<BrowseSkills />} />
           <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
-          <Route path="/browse" element={isAuthenticated ? <BrowseSkills /> : <Navigate to="/login" />} />
           <Route path="/swaps" element={isAuthenticated ? <SwapRequests /> : <Navigate to="/login" />} />
           <Route path="/admin" element={user?.role === "admin" ? <AdminDashboard /> : <Navigate to="/" />} />
           <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/" />} />

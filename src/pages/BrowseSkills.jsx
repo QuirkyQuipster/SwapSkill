@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function BrowseSkills() {
-  const { user } = useUser();
+  const { user, isAuthenticated } = useUser();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,6 +36,12 @@ function BrowseSkills() {
   };
 
   const handleSwapRequest = async (recipientId, requestedSkill, offeredSkill) => {
+    if (!isAuthenticated) {
+      alert('Please login to send swap requests');
+      navigate('/login');
+      return;
+    }
+
     try {
       setRequesting(recipientId);
       
@@ -76,6 +84,26 @@ function BrowseSkills() {
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-8 transition-colors duration-300">
       <div className="max-w-4xl mx-auto">
         <h2 className="text-3xl font-bold mb-6 text-blue-700 dark:text-yellow-300">Browse Skills</h2>
+        
+        {/* Login Prompt for Non-Authenticated Users */}
+        {!isAuthenticated && (
+          <div className="bg-blue-50 dark:bg-blue-900 border border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-blue-800 dark:text-blue-200">Want to connect with others?</h3>
+                <p className="text-blue-600 dark:text-blue-300 text-sm mt-1">
+                  Login to send swap requests and manage your profile
+                </p>
+              </div>
+              <button
+                onClick={() => navigate('/login')}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* Search Bar */}
         <div className="mb-6">
@@ -187,7 +215,8 @@ function BrowseSkills() {
                 <button
                   onClick={() => {
                     const skillToRequest = userData.skillsOffered[0] || 'their skills';
-                    handleSwapRequest(userData._id, skillToRequest, user.skillsOffered[0] || 'General Help');
+                    const userOfferedSkill = isAuthenticated ? (user.skillsOffered[0] || 'General Help') : 'General Help';
+                    handleSwapRequest(userData._id, skillToRequest, userOfferedSkill);
                   }}
                   disabled={requesting === userData._id}
                   className="w-full bg-blue-600 dark:bg-yellow-400 text-white dark:text-black px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-yellow-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
