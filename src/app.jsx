@@ -73,7 +73,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 
 function App() {
-  // 🔒 Simulate role (replace with context/localStorage later)
+  // Simulate role (replace with context/localStorage later)
   const userRole = localStorage.getItem("userRole") || "user"; // or "admin"
 
   const linkClass = ({ isActive }) =>
