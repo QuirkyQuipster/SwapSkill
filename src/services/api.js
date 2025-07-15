@@ -66,24 +66,24 @@ const mockUsers = [
 
 const mockSwapRequests = [
   {
-    id: 1,
-    requester: { id: 2, first_name: 'Sarah', last_name: 'Chen', email: 'sarah@example.com' },
-    recipient: { id: 1, first_name: 'Alex', last_name: 'Johnson', email: 'alex@example.com' },
-    requested_skill: 'JavaScript',
-    offered_skill: 'UI/UX Design',
+    _id: 1,
+    requester: { _id: 2, name: 'Sarah Chen', email: 'sarah@example.com' },
+    recipient: { _id: 1, name: 'Alex Johnson', email: 'alex@example.com' },
+    requestedSkill: 'JavaScript',
+    offeredSkill: 'UI/UX Design',
     status: 'pending',
     message: 'I\'d like to learn JavaScript from you. I can offer UI/UX Design in return.',
-    created_at: new Date().toISOString()
+    createdAt: new Date().toISOString()
   },
   {
-    id: 2,
-    requester: { id: 3, first_name: 'Mike', last_name: 'Rodriguez', email: 'mike@example.com' },
-    recipient: { id: 1, first_name: 'Alex', last_name: 'Johnson', email: 'alex@example.com' },
-    requested_skill: 'React',
-    offered_skill: 'Spanish',
+    _id: 2,
+    requester: { _id: 3, name: 'Mike Rodriguez', email: 'mike@example.com' },
+    recipient: { _id: 1, name: 'Alex Johnson', email: 'alex@example.com' },
+    requestedSkill: 'React',
+    offeredSkill: 'Spanish',
     status: 'accepted',
     message: 'I\'d like to learn React from you. I can offer Spanish lessons in return.',
-    created_at: new Date(Date.now() - 86400000).toISOString()
+    createdAt: new Date(Date.now() - 86400000).toISOString()
   }
 ];
 
@@ -359,23 +359,24 @@ class ApiService {
   // Swap Requests
   async createSwapRequest(requestData) {
     try {
-      return await this.makeRequest(`${this.baseURL}/swaps/`, {
+      const response = await this.makeRequest(`${this.baseURL}/swaps/`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         body: JSON.stringify(requestData)
       });
+      return response;
     } catch (error) {
       // Mock swap request creation
       await new Promise(resolve => setTimeout(resolve, 500));
       const newRequest = {
-        id: Date.now().toString(),
-        requester: { id: 'current-user', first_name: 'You', last_name: '', email: 'demo@example.com' },
-        recipient: { id: requestData.recipient, first_name: 'Demo', last_name: 'User', email: 'demo@example.com' },
-        requested_skill: requestData.requested_skill,
-        offered_skill: requestData.offered_skill,
+        _id: Date.now().toString(),
+        requester: { _id: 'current-user', name: 'You', email: 'demo@example.com' },
+        recipient: { _id: requestData.recipient, name: 'Demo User', email: 'demo@example.com' },
+        requestedSkill: requestData.requested_skill,
+        offeredSkill: requestData.offered_skill,
         status: 'pending',
         message: requestData.message,
-        created_at: new Date().toISOString()
+        createdAt: new Date().toISOString()
       };
       return newRequest;
     }
@@ -384,13 +385,15 @@ class ApiService {
   async getSwapRequests(params = {}) {
     try {
       const queryString = new URLSearchParams(params).toString();
-      return await this.makeRequest(`${this.baseURL}/swaps/?${queryString}`, {
+      const response = await this.makeRequest(`${this.baseURL}/swaps/?${queryString}`, {
         headers: this.getAuthHeaders()
       });
+      // Ensure we return the correct structure
+      return { swapRequests: response.results || response };
     } catch (error) {
       // Mock swap requests
       await new Promise(resolve => setTimeout(resolve, 300));
-      return { results: mockSwapRequests };
+      return { swapRequests: mockSwapRequests };
     }
   }
 

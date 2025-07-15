@@ -13,4 +13,5 @@ urlpatterns = [
     # Swap ratings
     path('ratings/', views.SwapRatingListView.as_view(), name='rating-list'),
     path('ratings/<int:pk>/', views.SwapRatingDetailView.as_view(), name='rating-detail'),
+    path('request/<int:user_id>/', views.create_swap_request, name='create_swap_request'),
 ] 

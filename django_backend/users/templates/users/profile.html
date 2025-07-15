@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Profile</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Update Profile</button>
+  </form>
+  <hr>
+  <h4>Your Info</h4>
+  <ul>
+    <li><strong>Username:</strong> {{ profile.user.username }}</li>
+    <li><strong>Email:</strong> {{ profile.user.email }}</li>
+    <li><strong>Bio:</strong> {{ profile.bio }}</li>
+    <li><strong>Skills Offered:</strong> {{ profile.skills_offered }}</li>
+    <li><strong>Skills Wanted:</strong> {{ profile.skills_wanted }}</li>
+  </ul>
+  <a href="/dashboard/" class="btn btn-info mt-3">Go to Dashboard</a>
+</div>
+{% endblock %} 

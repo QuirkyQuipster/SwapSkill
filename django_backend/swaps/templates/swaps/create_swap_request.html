@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Request a Skill Swap with {{ to_user.username }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label for="skill" class="form-label">Skill to Request</label>
+      <input type="text" name="skill" id="skill" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-success">Send Request</button>
+    <a href="/browse/" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %} 

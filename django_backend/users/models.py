@@ -52,3 +52,14 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'User'
         verbose_name_plural = 'Users' 
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+    skills_offered = models.CharField(max_length=255, blank=True)
+    skills_wanted = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.user.username 
+
+# Remove the signal code from here, as it is already in views.py 

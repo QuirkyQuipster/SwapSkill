@@ -10,6 +10,23 @@ from .serializers import (
     UserSerializer, UserRegistrationSerializer, UserLoginSerializer,
     UserProfileUpdateSerializer
 )
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import UserRegisterForm, ProfileForm, LoginForm
+from .models import Profile
+from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.http import HttpResponseRedirect
+from swaps.models import SwapRequest
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
 
 
 class RegisterView(APIView):
@@ -139,3 +156,73 @@ def me(request):
     """Get current user information."""
     serializer = UserSerializer(request.user)
     return Response(serializer.data) 
+
+def signup_view(request):
+    if request.method == 'POST':
+        user_form = UserRegisterForm(request.POST)
+        profile_form = ProfileForm(request.POST)
+        if user_form.is_valid() and profile_form.is_valid():
+            user = user_form.save(commit=False)
+            user.set_password(user_form.cleaned_data['password'])
+            user.save()
+            profile = profile_form.save(commit=False)
+            profile.user = user
+            profile.save()
+            messages.success(request, 'Account created! Please log in.')
+            return redirect('login')
+    else:
+        user_form = UserRegisterForm()
+        profile_form = ProfileForm()
+    return render(request, 'users/signup.html', {'user_form': user_form, 'profile_form': profile_form})
+
+def login_view(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)
+                return redirect('profile')
+            else:
+                messages.error(request, 'Invalid credentials')
+    else:
+        form = LoginForm()
+    return render(request, 'users/login.html', {'form': form})
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+@login_required
+def profile_view(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Profile updated!')
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=profile)
+    return render(request, 'users/profile.html', {'form': form, 'profile': profile}) 
+
+def home_redirect(request):
+    return HttpResponseRedirect('/login/') 
+
+def browse_skills(request):
+    users = User.objects.all().select_related('profile')
+    query = request.GET.get('q')
+    if query:
+        users = users.filter(profile__skills_offered__icontains=query)
+    return render(request, 'users/browse_skills.html', {'users': users, 'query': query}) 
+
+@login_required
+def dashboard_view(request):
+    sent_requests = SwapRequest.objects.filter(from_user=request.user)
+    received_requests = SwapRequest.objects.filter(to_user=request.user)
+    return render(request, 'users/dashboard.html', {
+        'sent_requests': sent_requests,
+        'received_requests': received_requests,
+    }) 

@@ -16,12 +16,13 @@ function SwapRequests() {
   const fetchSwapRequests = async () => {
     try {
       setLoading(true);
-      const data = await api.getSwapRequests({ type: activeTab });
-      setSwapRequests(data.swapRequests);
       setError(null);
+      const data = await api.getSwapRequests({ type: activeTab });
+      setSwapRequests(data.swapRequests || []);
     } catch (err) {
-      setError('Failed to load swap requests');
       console.error('Error fetching swap requests:', err);
+      setError('Failed to load swap requests. Please try again later.');
+      setSwapRequests([]);
     } finally {
       setLoading(false);
     }
@@ -33,7 +34,8 @@ function SwapRequests() {
       fetchSwapRequests(); // Refresh the list
       alert(`Request ${newStatus} successfully!`);
     } catch (err) {
-      alert('Failed to update request: ' + err.message);
+      console.error('Error updating request:', err);
+      alert('Failed to update request. Please try again.');
     }
   };
 
@@ -44,7 +46,8 @@ function SwapRequests() {
         fetchSwapRequests(); // Refresh the list
         alert('Request deleted successfully!');
       } catch (err) {
-        alert('Failed to delete request: ' + err.message);
+        console.error('Error deleting request:', err);
+        alert('Failed to delete request. Please try again.');
       }
     }
   };
@@ -74,6 +77,26 @@ function SwapRequests() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4">Loading swap requests...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Handle case where user is not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-100 p-8 transition-colors duration-300">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-200 p-6 rounded-lg mb-6">
+            <h3 className="text-lg font-semibold mb-2">Authentication Required</h3>
+            <p>Please log in to view your swap requests.</p>
+          </div>
+          <button
+            onClick={() => window.location.href = '/login'}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            Go to Login
+          </button>
         </div>
       </div>
     );
@@ -119,12 +142,26 @@ function SwapRequests() {
         <div className="space-y-4">
           {swapRequests.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">
-                {activeTab === 'incoming' 
-                  ? 'No incoming swap requests.'
-                  : 'No outgoing swap requests.'
-                }
-              </p>
+              <div className="bg-gray-100 dark:bg-gray-800 p-6 rounded-lg">
+                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                  {activeTab === 'incoming' 
+                    ? 'No incoming swap requests.'
+                    : 'No outgoing swap requests.'
+                  }
+                </p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mb-4">
+                  {activeTab === 'incoming' 
+                    ? 'When someone sends you a swap request, it will appear here.'
+                    : 'Your sent swap requests will appear here.'
+                  }
+                </p>
+                <button
+                  onClick={() => window.location.href = '/browse'}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                >
+                  Browse Skills
+                </button>
+              </div>
             </div>
           ) : (
             swapRequests.map((request) => {

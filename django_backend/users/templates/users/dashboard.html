@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Dashboard</h2>
+  <div class="row">
+    <div class="col-md-6">
+      <h4>Sent Requests</h4>
+      <table class="table table-bordered">
+        <thead><tr><th>To</th><th>Skill</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for req in sent_requests %}
+          <tr>
+            <td>{{ req.to_user.username }}</td>
+            <td>{{ req.skill }}</td>
+            <td>{{ req.status|title }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">No sent requests.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="col-md-6">
+      <h4>Received Requests</h4>
+      <table class="table table-bordered">
+        <thead><tr><th>From</th><th>Skill</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for req in received_requests %}
+          <tr>
+            <td>{{ req.from_user.username }}</td>
+            <td>{{ req.skill }}</td>
+            <td>{{ req.status|title }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">No received requests.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <a href="/browse/" class="btn btn-primary mt-3">Browse Skills</a>
+  <a href="/profile/" class="btn btn-secondary mt-3">Edit Profile</a>
+</div>
+{% endblock %} 

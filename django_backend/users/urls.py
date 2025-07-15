@@ -2,17 +2,11 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # Authentication
-    path('register/', views.RegisterView.as_view(), name='register'),
-    path('login/', views.LoginView.as_view(), name='login'),
-    path('logout/', views.LogoutView.as_view(), name='logout'),
-    path('me/', views.me, name='me'),
-    
-    # User management
-    path('profile/', views.UserProfileView.as_view(), name='profile'),
-    path('list/', views.UserListView.as_view(), name='user-list'),
-    path('<int:pk>/', views.UserDetailView.as_view(), name='user-detail'),
-    
-    # Health check
-    path('health/', views.health_check, name='health-check'),
+    path('', views.home_redirect, name='home'),
+    path('signup/', views.signup_view, name='signup'),
+    path('login/', views.login_view, name='login'),
+    path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.profile_view, name='profile'),
+    path('browse/', views.browse_skills, name='browse_skills'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
 ] 

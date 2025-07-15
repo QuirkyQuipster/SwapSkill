@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <h2>Browse Skills</h2>
+  <form method="get" class="mb-3">
+    <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search skills..." class="form-control" style="max-width:300px;display:inline-block;">
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Skills Offered</th>
+        <th>Skills Wanted</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.profile.skills_offered }}</td>
+        <td>{{ user.profile.skills_wanted }}</td>
+        <td>
+          {% if user != request.user %}
+          <a href="/swaps/request/{{ user.id }}/" class="btn btn-sm btn-success">Request Swap</a>
+          {% else %}
+          <span class="text-muted">(You)</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">No users found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %} 

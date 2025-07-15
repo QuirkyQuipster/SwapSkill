@@ -1,44 +1,21 @@
 from django.db import models
-from users.models import User
+from django.contrib.auth.models import User
 
 
 class SwapRequest(models.Model):
-    """Model for skill swap requests between users."""
-    
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('accepted', 'Accepted'),
         ('rejected', 'Rejected'),
-        ('completed', 'Completed'),
-        ('cancelled', 'Cancelled'),
     ]
-    
-    requester = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE, 
-        related_name='sent_requests'
-    )
-    recipient = models.ForeignKey(
-        User, 
-        on_delete=models.CASCADE, 
-        related_name='received_requests'
-    )
-    requested_skill = models.CharField(max_length=100)
-    offered_skill = models.CharField(max_length=100)
-    message = models.TextField()
-    status = models.CharField(
-        max_length=20, 
-        choices=STATUS_CHOICES, 
-        default='pending'
-    )
+    from_user = models.ForeignKey(User, related_name='sent_requests', on_delete=models.CASCADE)
+    to_user = models.ForeignKey(User, related_name='received_requests', on_delete=models.CASCADE)
+    skill = models.CharField(max_length=100)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-    
+
     def __str__(self):
-        return f"{self.requester.email} -> {self.recipient.email}: {self.requested_skill}"
+        return f"{self.from_user} → {self.to_user} ({self.skill})"
 
 
 class SwapRating(models.Model):

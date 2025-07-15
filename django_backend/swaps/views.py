@@ -7,6 +7,10 @@ from .serializers import (
     SwapRequestSerializer, SwapRequestCreateSerializer, SwapRequestUpdateSerializer,
     SwapRatingSerializer, SwapRatingCreateSerializer
 )
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.models import User
 
 
 class SwapRequestListView(generics.ListCreateAPIView):
@@ -148,3 +152,21 @@ class SwapRatingDetailView(generics.RetrieveUpdateDestroyAPIView):
     
     def get_queryset(self):
         return SwapRating.objects.filter(rater=self.request.user) 
+
+
+@login_required
+def create_swap_request(request, user_id):
+    to_user = get_object_or_404(User, id=user_id)
+    if request.method == 'POST':
+        skill = request.POST.get('skill')
+        if skill:
+            SwapRequest.objects.create(
+                from_user=request.user,
+                to_user=to_user,
+                skill=skill,
+            )
+            messages.success(request, 'Skill Swap Request Sent!')
+            return redirect('dashboard')
+        else:
+            messages.error(request, 'Please specify a skill.')
+    return render(request, 'swaps/create_swap_request.html', {'to_user': to_user}) 

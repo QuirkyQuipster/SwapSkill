@@ -8,10 +8,11 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('users.urls')),
     path('api/auth/', include('users.urls')),
     path('api/users/', include('users.urls')),
     path('api/skills/', include('skills.urls')),
-    path('api/swaps/', include('swaps.urls')),
+    path('swaps/', include('swaps.urls')),
     path('api/health/', include('users.urls')),
 ]
 
